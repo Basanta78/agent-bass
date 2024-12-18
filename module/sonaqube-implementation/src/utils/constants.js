@@ -1,5 +1,5 @@
-const repoOwner = '';
-const repoName = '';
+const repoOwner = 'shresthasamir4119';
+const repoName = 'agent-bass-test';
 const baseBranch = 'main';
 const newBranch = baseBranch+'agent-bass-branch';
 const prTitle = newBranch + ' Bot-generated Fix for Sonar Code Quality Issue';
