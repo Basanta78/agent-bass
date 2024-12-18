@@ -1,20 +1,19 @@
-const express = require('express');
+import express from "express";
+import routes from "./routes.js";
+import cors from "cors";
+
 const app = express();
-const routes = require('./routes');
-const cors = require('cors');
 
-app.use(cors()); 
-
-
+app.use(cors());
 app.use(express.json());
-app.use('/api', routes);
+app.use("/api", routes);
 
-let x = 42;
-// await x; // Noncompliant
+const x = 42;
+// await x; // Noncompliant - This remains noncompliant since `await` is for promises, not regular values.
 
 const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
-module.exports = app;
+export default app;

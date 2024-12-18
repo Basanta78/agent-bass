@@ -1,49 +1,70 @@
-const express = require('express');
-const express1 = require('express'); // Noncompliant
-const axios = require('axios');
-const bodyParser = require('body-parser');
+import express from "express";
+import axios from "axios";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import { getChangesData } from "./utils/ai.js";
+
+dotenv.config();
 
 const router = express.Router();
-require('dotenv').config();
 
 // Load environment variables
 const { SONARQUBE_URL, SONARQUBE_TOKEN, COMPONENT_KEY } = process.env;
 
-
 // Get SonarQube issues for a repository
-router.get('/sonarqube/issues', async (req, res) => {
-    try {
-        const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
-            params: {
-                componentKeys: COMPONENT_KEY,
-                statuses: 'OPEN',
-                types: 'CODE_SMELL',
-                severities: 'MINOR,MAJOR,CRITICAL,BLOCKER',
-            },
-            auth: {
-                username: SONARQUBE_TOKEN,
-                password: '',
-            },
-        });
+router.get("/sonarqube/issues", async (req, res) => {
+  try {
+    const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
+      params: {
+        componentKeys: COMPONENT_KEY,
+        statuses: "OPEN",
+        types: "CODE_SMELL",
+        severities: "MINOR,MAJOR,CRITICAL,BLOCKER",
+      },
+      auth: {
+        username: SONARQUBE_TOKEN,
+        password: "",
+      },
+    });
 
-        const issues = response.data.issues;
+    const issues = response.data.issues;
+    console.log("Fetched issues:", JSON.stringify(issues, null, 2));
 
-        console.log('Fetched issues:', JSON.stringify(issues, null, 2));
-
-        res.json(issues);
-    } catch (error) {
-        console.error('Error fetching issues from SonarQube:', error.message);
-        process.exit(1);
-    }
+    res.json(issues);
+  } catch (error) {
+    console.error("Error fetching issues from SonarQube:", error.message);
+    process.exit(1);
+  }
 });
 
-var x = 1;
-delete x;       // Noncompliant
+router.post("/fixissue", async (req, res) => {
+  try {
+    const { key, line, message, component } = req.body;
 
-function foo(name) {
-    name = name;
-}
+    // Parse component
+    const path = component.split(":")[1];
+    console.log("path", path);
 
-delete foo;
+    const issueDetails = {
+      message,
+      path,
+      line,
+    };
 
-module.exports = router;
+    const changesData = await getChangesData([issueDetails]);
+    console.log("changesData", changesData);
+
+    res.json({});
+  } catch (error) {
+    console.error("Error fetching issues from SonarQube:", error.message);
+    process.exit(1);
+  }
+});
+
+let x = 1;
+
+const foo = (name) => {
+  name = name;
+};
+
+export default router;

@@ -1,8 +1,8 @@
 import ollama from "ollama";
-import fs from 'node:fs';
+import fs from "node:fs";
 
 const fix_error = async (err, content, line) => {
-    let prompt = `
+  let prompt = `
     You are given a code file content, an error message, and a line number where the issue was identified. Please fix the code, making sure to maintain the formatting of the rest of the file, and provide the fixed file content in the correct format.
     
     Error/Suggestion: ${err}
@@ -11,16 +11,20 @@ const fix_error = async (err, content, line) => {
     
     Full Code all the content below:
     ${content}
-    `
+    `;
 
-    try {
-        const { response } = await ollama.generate({ model: "agent-BASS", format: 'json', prompt });
+  try {
+    const { response } = await ollama.generate({
+      model: "agent-BASS",
+      format: "json",
+      prompt,
+    });
 
-        return JSON.parse(response);
-    } catch (error) {
-        console.log(error);
-    }
-}
+    return JSON.parse(response);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 /**
  * 
@@ -33,14 +37,16 @@ const fix_error = async (err, content, line) => {
  * @returns 
  */
 export const getChangesData = async (errors) => {
-    return await Promise.all(errors.map(async (err) => {
-        const { error, line, path } = err;
-        const content = fs.readFileSync(path, 'utf-8');
-        try {
-            const response = await fix_error(error, JSON.stringify(content), line);
-            return { path, content: response.code };
-        } catch (error) {
-            console.log(error);
-        }
-    }));
-}
+  return await Promise.all(
+    errors.map(async (err) => {
+      const { error, line, path } = err;
+      const content = fs.readFileSync(path, "utf-8");
+      try {
+        const response = await fix_error(error, JSON.stringify(content), line);
+        return { path, content: response.code };
+      } catch (error) {
+        console.log(error);
+      }
+    })
+  );
+};
