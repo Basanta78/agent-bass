@@ -24,7 +24,7 @@ const getRepoInfo = async (repoUrl) => {
         // Fetch repository info using GitHub API (use authentication if needed)
         const response = await axios.get(githubApiUrl, {
             headers: {
-                'Authorization': `Bearer ${GITHUB_TOKEN}ß`,
+                'Authorization': `Bearer ${GITHUB_TOKEN}`,
             },
         });
 
