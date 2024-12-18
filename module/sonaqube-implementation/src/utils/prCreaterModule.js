@@ -1,21 +1,7 @@
 //convert to js after package is added
 import axios from 'axios';
 
-const repoOwner = '';
-const repoName = '';
-const newBranch = '';
-const baseBranch = 'main';
-const prTitle = 'Your Pull Request Title';
-const prBody = 'Your Pull Request Description';
-const token = '';
-const fileChanges = [];
-/**
- * [
- *  { path: 'test.txt', content: 'New content for file 1' },
- *  { path: 'test2.txt', content: 'console.log("File 2 updated");' }
- *  ]
- */
-const commitMessage = 'This is a test commit message';
+import { repoName, repoOwner, baseBranch, newBranch, prTitle, prBody, token, fileChanges, commitMessage } from './constants';
 
 async function createBranch(repoOwner, repoName, newBranch, baseBranch, token) {
     try {
