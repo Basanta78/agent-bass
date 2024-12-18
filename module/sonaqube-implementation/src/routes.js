@@ -1,151 +1,75 @@
 import express from "express";
 import axios from "axios";
-import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import { getChangesData } from "./utils/ai.js";
-import { doGithubPRProcess } from "./utils/prCreaterModule.js";
+import { doGithubPRProcess } from "../utils/github-pr-process";
 
 dotenv.config();
 
 const router = express.Router();
 
-// Load environment variables
-const { SONARQUBE_URL, SONARQUBE_TOKEN, COMPONENT_KEY } = process.env;
-
-// Get SonarQube issues for a repository
-router.get("/sonarqube/issues", async (req, res) => {
+router.get("/issues", async (req, res) => {
   try {
-    const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
-      params: {
-        componentKeys: COMPONENT_KEY,
-        statuses: "OPEN",
-        types: "CODE_SMELL",
-        severities: "MINOR,MAJOR,CRITICAL,BLOCKER",
-      },
-      auth: {
-        username: SONARQUBE_TOKEN,
-        password: "",
-      },
-    });
+    const response = await axios.get(`https://api.github.com/repos/${process.env.GITHUB_REPO}/issues`, { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } });
 
-    const issues = response.data.issues;
-    console.log("Fetched issues:", JSON.stringify(issues, null, 2));
+    const issues = response.data;
 
     res.json(issues);
   } catch (error) {
-    console.error("Error fetching issues from SonarQube:", error.message);
+    console.error("Error fetching issues from GitHub:", error.message);
     process.exit(1);
   }
 });
 
-router.post("/fixissue", async (req, res) => {
+router.post("/issues", async (req, res) => {
   try {
-    const { key, line, message, component } = req.body;
+    const response = await axios.post(`https://api.github.com/repos/${process.env.GITHUB_REPO}/issues`, req.body, { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } });
 
-    // Parse component
-    const path = component.split(":")[1];
-    console.log("path", path);
+    const issue = response.data;
 
-    const issueDetails = {
-      message,
-      path,
-      line,
-    };
-
-    // const changesData = await getChangesData([issueDetails]);
-
-    const changesData = [
-      {
-        path: "/Users/basantamaharjan/hack/agent-bass/module/sonaqube-implementation/src/routes.js",
-        content:
-          'import express from "express";\n' +
-          'import axios from "axios";\n' +
-          'import bodyParser from "body-parser";\n' +
-          'import dotenv from "dotenv";\n' +
-          'import { getChangesData } from "./utils/ai.js";\n' +
-          "\n" +
-          "dotenv.config();\n" +
-          "\n" +
-          "const router = express.Router();\n" +
-          "\n" +
-          "// Load environment variables\n" +
-          "const { SONARQUBE_URL, SONARQUBE_TOKEN, COMPONENT_KEY } = process.env;\n" +
-          "\n" +
-          "// Get SonarQube issues for a repository\n" +
-          'router.get("/sonarqube/issues", async (req, res) => {\n' +
-          "  try {\n" +
-          "    const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {\n" +
-          "      params: {\n" +
-          "        componentKeys: COMPONENT_KEY,\n" +
-          '        statuses: "OPEN",\n' +
-          '        types: "CODE_SMELL",\n' +
-          '        severities: "MINOR,MAJOR,CRITICAL,BLOCKER",\n' +
-          "      },\n" +
-          "      auth: {\n" +
-          "        username: SONARQUBE_TOKEN,\n" +
-          '        password: "",\n' +
-          "      },\n" +
-          "    });\n" +
-          "\n" +
-          "    const issues = response.data.issues;\n" +
-          '    console.log("Fetched issues:", JSON.stringify(issues, null, 2));\n' +
-          "\n" +
-          "    res.json(issues);\n" +
-          "  } catch (error) {\n" +
-          '    console.error("Error fetching issues from SonarQube:", error.message);\n' +
-          "    process.exit(1);\n" +
-          "  }\n" +
-          "});\n" +
-          "\n" +
-          'router.post("/fixissue", async (req, res) => {\n' +
-          "  try {\n" +
-          "    const { key, line, message, component } = req.body;\n" +
-          "\n" +
-          "    // Parse component\n" +
-          '    const path = component.split(":")[1];\n' +
-          '    console.log("path", path);\n' +
-          "\n" +
-          "    const issueDetails = {\n" +
-          "      message,\n" +
-          "      path,\n" +
-          "      line,\n" +
-          "    };\n" +
-          "\n" +
-          "    const changesData = await getChangesData([issueDetails]);\n" +
-          '    console.log("changesData", changesData);\n' +
-          "\n" +
-          "    res.json({});\n" +
-          "  } catch (error) {\n" +
-          '    console.error("Error fetching issues from SonarQube:", error.message);\n' +
-          "    process.exit(1);\n" +
-          "  }\n" +
-          "});\n" +
-          "\n" +
-          "let x = 1;\n" +
-          "\n" +
-          "const foo = (name) => {\n" +
-          "  name = name;\n" +
-          "};\n" +
-          "\n" +
-          "export default router;\n",
-      },
-    ];
-
-    await doGithubPRProcess(changesData);
-
-    // console.log("changesData", changesData);
-
-    res.json({});
+    res.json(issue);
   } catch (error) {
-    console.error("Error fetching issues from SonarQube:", error.message);
+    console.error("Error creating issue in GitHub:", error.message);
     process.exit(1);
   }
 });
 
-let x = 1;
+router.get("/issues/:id", async (req, res) => {
+  try {
+    const response = await axios.get(`https://api.github.com/repos/${process.env.GITHUB_REPO}/issues/${req.params.id}`, { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } });
 
-const foo = (name) => {
-  name = name;
-};
+    const issue = response.data;
+
+    res.json(issue);
+  } catch (error) {
+    console.error("Error fetching issue from GitHub:", error.message);
+    process.exit(1);
+  }
+});
+
+router.put("/issues/:id", async (req, res) => {
+  try {
+    const response = await axios.put(`https://api.github.com/repos/${process.env.GITHUB_REPO}/issues/${req.params.id}`, req.body, { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } });
+
+    const issue = response.data;
+
+    res.json(issue);
+  } catch (error) {
+    console.error("Error updating issue in GitHub:", error.message);
+    process.exit(1);
+  }
+});
+
+router.delete("/issues/:id", async (req, res) => {
+  try {
+    const response = await axios.delete(`https://api.github.com/repos/${process.env.GITHUB_REPO}/issues/${req.params.id}`, { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } });
+
+    const issue = response.data;
+
+    res.json(issue);
+  } catch (error) {
+    console.error("Error deleting issue from GitHub:", error.message);
+    process.exit(1);
+  }
+});
 
 export default router;
