@@ -164,8 +164,28 @@ async function createPullRequest(repoOwner, repoName, headBranch, baseBranch, pr
     }
 }
 
-createBranch(repoOwner, repoName, newBranch, baseBranch, token)
-    .then(() => commitChanges(repoOwner, repoName, newBranch, fileChanges, commitMessage, token))
-    .then(() => createPullRequest(repoOwner, repoName, newBranch, baseBranch, prTitle, prBody, token))
-    .then(pr => console.log('Pull Request Details:', pr))
-    .catch(err => console.error('Error:', err));
+const doGithubPRProcess = async () => {
+    try {
+        // Create a new branch
+        await createBranch(repoOwner, repoName, newBranch, baseBranch, token);
+        console.log(`Branch ${newBranch} created successfully`);
+
+        // Commit changes to the new branch
+        await commitChanges(repoOwner, repoName, newBranch, fileChanges, commitMessage, token);
+        console.log(`Changes committed to ${newBranch}`);
+
+        // Create the pull request
+        const pr = await createPullRequest(repoOwner, repoName, newBranch, baseBranch, prTitle, prBody, token);
+        console.log('Pull Request Details:', pr);
+
+        // return pr; // Optionally return PR details for further use
+    } catch (err) {
+        console.error('Error during GitHub PR process:', err);
+        // throw err; // Re-throwing error in case the calling function needs to handle it
+    }
+}
+
+module.exports = {
+    doGithubPRProcess
+}
+
