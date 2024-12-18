@@ -7,6 +7,7 @@
       "@emotion/styled": "^11.14.0",
       "@mui/icons-material": "^6.2.1",
       "@mui/material": "^6.2.1",
+      "ollama": "^0.5.11",
       "axios": "^1.7.9",
       "cra-template": "1.2.0",
       "react": "^19.0.0",
@@ -15,7 +16,9 @@
       "react-scripts": "5.0.1",
       "web-vitals": "^4.2.4"
     },
+    "type": "module",
     "scripts": {
+      "prepare": "node ./src/init.js",
       "start": "react-scripts start",
       "build": "react-scripts build",
       "test": "react-scripts test",
