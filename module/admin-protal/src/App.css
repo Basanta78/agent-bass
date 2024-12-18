@@ -1,49 +1,57 @@
-/* App.css */
 .app-container {
-    padding: 20px;
-    background-color: #f1f1f1;
-  }
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background-color: #fafafa;
+  height: 100vh;
+  width: 100%;
+}
+
+.header {
+  text-align: center;
+  font-weight: 700;
+  color: #444;
+  margin-bottom: 30px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  padding: 20px;  
+  margin: 10px; 
+  background-color: #f9f9f9;  
+  border-radius: 8px;  
+}
+
+
+.issue-card {
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+  border-radius: 8px;
+}
+
+.issue-card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.divider {
+  margin: 10px 0;
+}
+
+.severity-chip {
+  margin-top: 10px;
+}
+
+button {
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
   .header {
-    text-align: center;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 30px;
-  }
-  
-  .loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 300px;
-  }
-  
-  .issue-card {
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
-    border-radius: 8px;
-  }
-  
-  .issue-card:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  }
-  
-  .divider {
-    margin: 10px 0;
-  }
-  
-  .severity-chip {
-    margin-top: 10px;
-  }
-  
-  button {
-    margin-top: 10px;
-  }
-  
-  @media (max-width: 600px) {
-    .header {
       font-size: 1.5rem;
-    }
   }
-  
+}
