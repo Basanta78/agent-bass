@@ -1,7 +1,7 @@
 //convert to js after package is added
 import axios from 'axios';
 
-import { repoName, repoOwner, baseBranch, newBranch, prTitle, prBody, token, fileChanges, commitMessage } from './constants';
+import { repoName, repoOwner, baseBranch, newBranch, prTitle, prBody, token, commitMessage } from './constants';
 
 async function createBranch(repoOwner, repoName, newBranch, baseBranch, token) {
     try {
@@ -173,7 +173,15 @@ async function createPullRequest(repoOwner, repoName, headBranch, baseBranch, pr
     }
 }
 
-const doGithubPRProcess = async () => {
+/*
+    const fileChanges = 
+        [
+        { path: 'test.txt', content: 'New content for file 1' },
+        { path: 'test2.txt', content: 'console.log("File 2 updated");' }
+        ]
+ */
+
+const doGithubPRProcess = async (fileChanges = []) => {
     try {
         // Create a new branch
         await createBranch(repoOwner, repoName, newBranch, baseBranch, token);
