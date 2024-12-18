@@ -49,10 +49,11 @@ const getRepoInfo = async (repoUrl) => {
 const createSonarQubeProject = async (repoInfo) => {
     try {
 
+        const randomNumber = Math.floor(Math.random() * 100) + 1;  // Random number between 1 and 100
         // Format data as application/x-www-form-urlencoded
         const data = qs.stringify({
-            project: repoInfo.name,
-            name: repoInfo.name,
+            project: repoInfo.name + randomNumber,
+            name: repoInfo.name + randomNumber,
             visibility: 'private',
         });
 
@@ -165,12 +166,12 @@ const runSonarScanner = async (token, projectKey, repoUrl) => {
             serverUrl: 'http://localhost:9000',
             token: token,
             options: {
-                'sonar.projectName': projectKey, 
-                'sonar.projectKey': projectKey, 
+                'sonar.projectName': projectKey,
+                'sonar.projectKey': projectKey,
                 'sonar.projectVersion': '0.0.1',
-                'sonar.sources': localRepoDir, 
-                'sonar.sourceEncoding': 'UTF-8', 
-                'sonar.login': token, 
+                'sonar.sources': localRepoDir,
+                'sonar.sourceEncoding': 'UTF-8',
+                'sonar.login': token,
                 'sonar.cpd.minLines': '1',
             }
         }, function (error) {
@@ -184,7 +185,7 @@ const runSonarScanner = async (token, projectKey, repoUrl) => {
     } catch (error) {
         console.error('Error during repository cloning or SonarQube scan:', error);
     }
-}; 
+};
 
 module.exports = {
     getRepoInfo,

@@ -1,0 +1,14 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Issue {
+    key     String  @unique
+    message String
+    fix     String?
+    fixed   Boolean @default(false)
+    MR      String?
+    type    String?
+    line    Int?
+}
