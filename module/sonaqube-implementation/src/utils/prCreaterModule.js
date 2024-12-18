@@ -5,24 +5,28 @@ import { repoName, repoOwner, baseBranch, newBranch, prTitle, prBody, token, com
 
 async function createBranch(repoOwner, repoName, newBranch, baseBranch, token) {
     try {
-        // Step 1: Check if the branch exists
-        const { data: existingBranchData } = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${newBranch}`, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json',
-            },
-        });
-
-        // If the branch exists, delete it
-        if (existingBranchData) {
-            console.log(`Branch '${newBranch}' exists. Deleting it...`);
-            await axios.delete(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${newBranch}`, {
+        try {
+            // Step 1: Check if the branch exists
+            const { data: existingBranchData } = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${newBranch}`, {
                 headers: {
                     'Authorization': `token ${token}`,
                     'Accept': 'application/vnd.github.v3+json',
                 },
             });
-            console.log(`Branch '${newBranch}' deleted.`);
+
+            // If the branch exists, delete it
+            if (existingBranchData) {
+                console.log(`Branch '${newBranch}' exists. Deleting it...`);
+                await axios.delete(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${newBranch}`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                    },
+                });
+                console.log(`Branch '${newBranch}' deleted.`);
+            }
+        } catch (e) {
+            console.log (e)
         }
 
         // Step 2: Get the base branch SHA
