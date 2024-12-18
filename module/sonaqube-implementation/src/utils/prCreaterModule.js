@@ -195,6 +195,7 @@ const doGithubPRProcess = async (fileChanges = []) => {
         const pr = await createPullRequest(repoOwner, repoName, newBranch, baseBranch, prTitle, prBody, token);
         console.log('Pull Request Details:', pr);
 
+        // pr.url will be the link for the created PR
         // return pr; // Optionally return PR details for further use
     } catch (err) {
         console.error('Error during GitHub PR process:', err);
