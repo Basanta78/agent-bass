@@ -4,7 +4,7 @@ const baseBranch = 'main';
 const newBranch = baseBranch+'agent-bass-branch';
 const prTitle = 'Your Pull Request Title';
 const prBody = 'Your Pull Request Description';
-const token = '';
+const token = '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'; //agent-bass-bot token
 const fileChanges = [];
 /**
  * [
