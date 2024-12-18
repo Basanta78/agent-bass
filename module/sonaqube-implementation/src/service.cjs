@@ -49,11 +49,10 @@ const getRepoInfo = async (repoUrl) => {
 const createSonarQubeProject = async (repoInfo) => {
     try {
 
-        const randomNumber = Math.floor(Math.random() * 100) + 1;  // Random number between 1 and 100
         // Format data as application/x-www-form-urlencoded
         const data = qs.stringify({
-            project: repoInfo.name + randomNumber,
-            name: repoInfo.name + randomNumber,
+            project: repoInfo.name,
+            name: repoInfo.name,
             visibility: 'private',
         });
 
@@ -145,11 +144,12 @@ const fetchSonarQubeIssues = async (projectName, token) => {
 const runSonarScanner = async (token, projectKey, repoUrl) => {
     try {
 
-        const baseDir = '/Users/amritakumari/workspace/hackathon/agent-bass/module';
+        const parentDir = path.dirname(__dirname);
 
-        const parentDir = path.dirname(baseDir);
+        const newPath =  path.join(parentDir, '/repository')
 
-        const localRepoDir = path.join(parentDir, projectKey);
+        const localRepoDir = path.join(newPath, projectKey);
+
 
 
         if (fs.existsSync(localRepoDir)) {
