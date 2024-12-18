@@ -16,8 +16,30 @@ const fileChanges = [];
  *  ]
  */
 const commitMessage = 'This is a test commit message';
+
 async function createBranch(repoOwner, repoName, newBranch, baseBranch, token) {
     try {
+        // Step 1: Check if the branch exists
+        const { data: existingBranchData } = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${newBranch}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+            },
+        });
+
+        // If the branch exists, delete it
+        if (existingBranchData) {
+            console.log(`Branch '${newBranch}' exists. Deleting it...`);
+            await axios.delete(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${newBranch}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                },
+            });
+            console.log(`Branch '${newBranch}' deleted.`);
+        }
+
+        // Step 2: Get the base branch SHA
         const { data: baseBranchData } = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${baseBranch}`, {
             headers: {
                 'Authorization': `token ${token}`,
@@ -27,6 +49,7 @@ async function createBranch(repoOwner, repoName, newBranch, baseBranch, token) {
 
         const baseBranchSHA = baseBranchData.object.sha;
 
+        // Step 3: Create the new branch
         const response = await axios.post(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`, {
             ref: `refs/heads/${newBranch}`,
             sha: baseBranchSHA,
