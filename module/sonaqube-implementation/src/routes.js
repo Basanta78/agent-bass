@@ -77,8 +77,8 @@ router.get('/projects', async (req, res) => {
     try {
         const response = await axios.get('http://localhost:9000/api/components/search_projects', {
             auth: {
-                username: 'admin',  // SonarQube username or API token
-                password: 'Amrita',  // Leave empty if using an API token
+                username: username,  // SonarQube username or API token
+                password: password,  // Leave empty if using an API token
             },
         });
 
