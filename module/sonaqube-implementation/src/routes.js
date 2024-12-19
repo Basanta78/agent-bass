@@ -76,7 +76,6 @@ router.get("/sonarqube/issues/:projectName", async (req, res) => {
       params: {
         componentKeys: projectName,
         statuses: "OPEN",
-        types: "CODE_SMELL",
         severities: "MINOR,MAJOR,CRITICAL,BLOCKER",
       },
       auth: {

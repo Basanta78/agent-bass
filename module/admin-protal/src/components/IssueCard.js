@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Card, CardContent, Typography, Button, Divider, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Button, Divider, Chip, Box } from '@mui/material';
 
 import CustomModal from './Modal';
 import CodeDiffViewer from './CodeDiffViewerDialog';
 
-function IssueCard({ issue, onFixIssue }) {
+function IssueCard({ issue, onFixIssue, isProcessing }) {
 
   //code sample
   const [codeVersion1, setCodeVersion1] = useState(`// Initial code version
@@ -15,12 +15,12 @@ function IssueCard({ issue, onFixIssue }) {
         console.log("Hello, world!");
     }`);
 
-    const [codeVersion2, setCodeVersion2] = useState(`// Updated code version
+  const [codeVersion2, setCodeVersion2] = useState(`// Updated code version
     function sayHello(name) {
         console.log("Hello, " + name + "!");
     }`);
 
-    const [file, setFile] = useState('file');
+  const [file, setFile] = useState('file');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -45,12 +45,12 @@ function IssueCard({ issue, onFixIssue }) {
         "repoName": issue.project
       }
 
-      const {data : response} = await axios.post(url, data);
+      const { data: response } = await axios.post(url, data);
       console.log('Response:', response);
       toast.success('Preview generated successfully!!');
-      setCodeVersion1(response.data?.contentPreview??'');
+      setCodeVersion1(response.data?.contentPreview ?? '');
       setCodeVersion2(response.newData);
-      setFile(response.data?.path?? 'file');
+      setFile(response.data?.path ?? 'file');
       toggleModal();
     } catch (error) {
       toast.error('Failed to create Preview. Please try again!');
@@ -65,6 +65,7 @@ function IssueCard({ issue, onFixIssue }) {
           {issue.message}
         </Typography>
         <Divider className="divider" />
+
         <Typography color="textSecondary" gutterBottom>
           <strong>File:</strong> {issue.component} (Line: {issue.line})
         </Typography>
@@ -72,24 +73,31 @@ function IssueCard({ issue, onFixIssue }) {
           <strong>Rule:</strong> {issue.rule}
         </Typography>
 
-        <Chip
-          label={issue.severity}
-          color={issue.severity === 'MAJOR' ? 'error' : 'warning'}
-          size="small"
-          className="severity-chip"
-        />
-        {issue.pr && (
-          <>
-          <Typography color="textSecondary">
-            <strong>PR:</strong> 
-          </Typography>
-          <Typography color="textSecondary">
-            <strong>{issue.pr}</strong>
-          </Typography>
-          </>
-        )}
+        {/* Severity and Type Labels - Show below the buttons */}
+        <Box sx={{ mt: 2, display: 'flex', flexDirection: 'row', gap: 1 }}>
+          {issue.severity && (
+            <Chip
+              label={issue.severity}
+              color={issue.severity === 'CRITICAL' ? 'error' : 'warning'}
+              size="small"
+              sx={{ alignSelf: 'flex-start' }}
+            />
+          )}
+          {issue.type && (
+            <Chip
+              label={issue.type}
+              color="default"
+              size="small"
+              sx={{
+                alignSelf: 'flex-start',
+                backgroundColor: '#FFCC00',
+                color: '#000',
+              }}
+            />
+          )}
+        </Box>
 
-         <Button
+        <Button
           variant="outlined"
           color="primary"
           onClick={handleShowPreview}
@@ -99,16 +107,32 @@ function IssueCard({ issue, onFixIssue }) {
           Show Preview
         </Button>
 
+
+
         <Button
           variant="contained"
-          color="secondary"
+          color={issue.isFixed ? 'success' : 'secondary'}
           onClick={handleFixIssue}
           fullWidth
           sx={{ mt: 2 }}
+          disabled={issue.isFixed || isProcessing} // Disable if issue is fixed or processing
         >
-          Fix Issue
+          {isProcessing ? 'Processing...' : issue.isFixed ? 'Fixed' : 'Fix Issue'}
         </Button>
 
+        {/* PR Link Button */}
+        {issue.pr && (
+          <Button
+            variant="outlined"
+            color="primary"
+            sx={{ mt: 2 }}
+            href={issue.pr}
+            target="_blank"
+            fullWidth
+          >
+            View MR
+          </Button>
+        )}
         <CustomModal isOpen={isModalOpen} onClose={toggleModal}>
           <CodeDiffViewer code1={codeVersion1} code2={codeVersion2} />
         </CustomModal>
