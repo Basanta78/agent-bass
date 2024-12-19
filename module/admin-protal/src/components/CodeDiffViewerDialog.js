@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Diff } from 'diff';
-import { Diff2Html } from 'diff2html';
+import Diff2Html from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
 
 const CodeDiffViewer = ({ code1, code2 }) => {
