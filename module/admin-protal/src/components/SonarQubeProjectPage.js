@@ -33,17 +33,15 @@ function SonarQubeProjectPage() {
   const [severityFilter, setSeverityFilter] = useState('ALL');
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [processingIssues, setProcessingIssues] = useState({});
-  const [fetchingIssues, setFetchingIssues] = useState(true); // New state for "Fetching Issues"
+  const [fetchingIssues, setFetchingIssues] = useState(true);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
-        setFetchingIssues(true); // Set fetching state to true
+        setFetchingIssues(true);
 
-        // Simulate a delay (2 seconds) for fetching issues
         const response = await axios.get(`http://localhost:5000/api/sonarqube/issues/${projectName}`);
 
-        // Simulating a delay before setting the issues
         setTimeout(() => {
           const issuesWithFixStatus = response.data.map((issue) => {
             const isFixed = localStorage.getItem(`issue_${issue.key}_fixed`) === 'true';
@@ -54,12 +52,12 @@ function SonarQubeProjectPage() {
           setIssues(issuesWithFixStatus);
           setFilteredIssues(issuesWithFixStatus);
           setLoading(false);
-          setFetchingIssues(false); // Set fetching state to false after issues are fetched
-        }, 2000); // Delay of 2 seconds to simulate the fetching process
+          setFetchingIssues(false);
+        }, 2000);
       } catch (err) {
         setError('Error fetching project details');
         setLoading(false);
-        setFetchingIssues(false); // Stop fetching state on error
+        setFetchingIssues(false);
       }
     };
 
@@ -130,9 +128,14 @@ function SonarQubeProjectPage() {
     }
   };
 
+  // Reload handler function
+  const handleReload = () => {
+    window.location.reload(); // Reload the page
+  };
+
   return (
     <Box className="root-container">
-      {/* Header */}
+      {/* Header with Reload Button */}
       <AppBar position="static" sx={{ backgroundColor: '#1976d2', mb: 2 }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
@@ -143,6 +146,21 @@ function SonarQubeProjectPage() {
           </Button>
           <Button color="inherit" href="/add-project">
             Add Repository
+          </Button>
+
+          {/* Reload Button */}
+          <Button
+            variant="contained" // Using contained variant for better visibility
+            color="secondary"
+            sx={{
+              marginLeft: 2,
+              textTransform: 'none',
+              padding: '6px 16px', // Adding padding for better size
+              fontWeight: 'bold',
+            }}
+            onClick={handleReload}
+          >
+            Reload
           </Button>
         </Toolbar>
       </AppBar>
@@ -155,8 +173,8 @@ function SonarQubeProjectPage() {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
               mb: 4,
             }}
           >
@@ -203,7 +221,6 @@ function SonarQubeProjectPage() {
               </FormControl>
             </Box>
           </Box>
-
 
           {/* Showing the "Fetching Issues" or the actual issues */}
           {fetchingIssues ? (
