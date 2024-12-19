@@ -50,8 +50,8 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
       const { data: response } = await axios.post(url, data);
       console.log('Response:', response);
       toast.success('Preview generated successfully!!');
-      setCodeVersion1(response.data??'');
-      setCodeVersion2(response.newData??'');
+      setCodeVersion1(response.data ?? '');
+      setCodeVersion2(response.newData ?? '');
       // setFile(response.data?.path ?? 'file');
       toggleModal();
     } catch (error) {
@@ -64,19 +64,21 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
   return (
     <Card className="issue-card">
       <CardContent>
-        <Typography variant="h6" color="primary" fontWeight="bold">
+        {/* Title (Message) */}
+        <Typography variant="h6" color="primary" fontWeight="bold" sx={{ textAlign: 'left' }}>
           {issue.message}
         </Typography>
         <Divider className="divider" />
 
-        <Typography color="textSecondary" gutterBottom>
+        {/* File and Rule Information */}
+        <Typography color="textSecondary" gutterBottom sx={{ textAlign: 'left' }}>
           <strong>File:</strong> {issue.component} (Line: {issue.line})
         </Typography>
-        <Typography color="textSecondary">
+        <Typography color="textSecondary" sx={{ textAlign: 'left' }}>
           <strong>Rule:</strong> {issue.rule}
         </Typography>
 
-        {/* Severity and Type Labels - Show below the buttons */}
+        {/* Severity and Type Labels */}
         <Box sx={{ mt: 2, display: 'flex', flexDirection: 'row', gap: 1 }}>
           {issue.severity && (
             <Chip
@@ -100,6 +102,7 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
           )}
         </Box>
 
+        {/* Buttons */}
         <Button
           variant="outlined"
           color="primary"
@@ -135,11 +138,14 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
             View MR
           </Button>
         )}
+
+        {/* Modal for Preview */}
         <CustomModal isOpen={isModalOpen} onClose={toggleModal}>
           <CodeDiffViewer code1={codeVersion1} code2={codeVersion2} />
         </CustomModal>
       </CardContent>
     </Card>
+
   );
 }
 
