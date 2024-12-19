@@ -31,7 +31,7 @@ function SonarQubeProjectPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [severityFilter, setSeverityFilter] = useState('ALL');
-  const [typeFilter, setTypeFilter] = useState('ALL'); 
+  const [typeFilter, setTypeFilter] = useState('ALL');
   const [processingIssues, setProcessingIssues] = useState({});
   const [fetchingIssues, setFetchingIssues] = useState(true); // New state for "Fetching Issues"
 
@@ -42,7 +42,7 @@ function SonarQubeProjectPage() {
 
         // Simulate a delay (2 seconds) for fetching issues
         const response = await axios.get(`http://localhost:5000/api/sonarqube/issues/${projectName}`);
-        
+
         // Simulating a delay before setting the issues
         setTimeout(() => {
           const issuesWithFixStatus = response.data.map((issue) => {
@@ -150,56 +150,60 @@ function SonarQubeProjectPage() {
       {/* Main Content */}
       <Box className="scrollable-content">
         <Container maxWidth="lg">
-          <Box sx={{ marginBottom: 4 }}>
-            <Fade in={true} timeout={1000}>
-              <Typography
-                variant="h3"
-                gutterBottom
-                sx={{ fontWeight: 'bold', textAlign: 'center', letterSpacing: '1px' }}
-              >
-                Project Issue Tracker: {projectName}
-              </Typography>
-            </Fade>
-          </Box>
 
-          {/* Filter Dropdowns */}
+          {/* Filter Dropdowns and Header in One Line */}
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
               mb: 4,
             }}
           >
-            <FormControl size="small" sx={{ minWidth: 150, marginRight: 2 }}>
-              <InputLabel>Severity</InputLabel>
-              <Select
-                value={severityFilter}
-                onChange={(e) => handleFilterChange(e, 'severity')}
-                label="Severity"
-              >
-                <MenuItem value="ALL">All</MenuItem>
-                <MenuItem value="BLOCKER">Blocker</MenuItem>
-                <MenuItem value="CRITICAL">Critical</MenuItem>
-                <MenuItem value="MAJOR">Major</MenuItem>
-                <MenuItem value="MINOR">Minor</MenuItem>
-              </Select>
-            </FormControl>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 'bold',
+                textAlign: 'left',
+                letterSpacing: '1px',
+                marginRight: 4,
+              }}
+            >
+              Project Issue Tracker: {projectName}
+            </Typography>
 
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={typeFilter}
-                onChange={(e) => handleFilterChange(e, 'type')}
-                label="Type"
-              >
-                <MenuItem value="ALL">All</MenuItem>
-                <MenuItem value="BUG">Bug</MenuItem>
-                <MenuItem value="VULNERABILITY">Vulnerability</MenuItem>
-                <MenuItem value="CODE_SMELL">Code Smell</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <FormControl size="small" sx={{ minWidth: 150, marginRight: 2 }}>
+                <InputLabel>Severity</InputLabel>
+                <Select
+                  value={severityFilter}
+                  onChange={(e) => handleFilterChange(e, 'severity')}
+                  label="Severity"
+                >
+                  <MenuItem value="ALL">All</MenuItem>
+                  <MenuItem value="BLOCKER">Blocker</MenuItem>
+                  <MenuItem value="CRITICAL">Critical</MenuItem>
+                  <MenuItem value="MAJOR">Major</MenuItem>
+                  <MenuItem value="MINOR">Minor</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={typeFilter}
+                  onChange={(e) => handleFilterChange(e, 'type')}
+                  label="Type"
+                >
+                  <MenuItem value="ALL">All</MenuItem>
+                  <MenuItem value="BUG">Bug</MenuItem>
+                  <MenuItem value="VULNERABILITY">Vulnerability</MenuItem>
+                  <MenuItem value="CODE_SMELL">Code Smell</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
+
 
           {/* Showing the "Fetching Issues" or the actual issues */}
           {fetchingIssues ? (
