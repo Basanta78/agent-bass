@@ -7,7 +7,7 @@ import { Card, CardContent, Typography, Button, Divider, Chip, Box } from '@mui/
 import CustomModal from './Modal';
 import CodeDiffViewer from './CodeDiffViewerDialog';
 
-function IssueCard({ issue, onFixIssue, isProcessing }) {
+function IssueCard({ issue = {}, onFixIssue, isProcessing }) {
 
   // Code sample
   const [codeVersion1, setCodeVersion1] = useState(`// Initial code version

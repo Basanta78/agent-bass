@@ -45,7 +45,7 @@ function SonarQubeProjectPage() {
         console.log({response})
 
         setTimeout(() => {
-          const issuesWithFixStatus = response.data.map((issue) => ({
+          const issuesWithFixStatus = response.data.map((issue = {}) => ({
             ...issue,
             isFixed: Boolean(issue.pr), 
             pr: issue.pr || null,    
@@ -66,7 +66,7 @@ function SonarQubeProjectPage() {
     fetchProjectDetails();
   }, [projectName]);
 
-  const handleFixIssue = async (issue) => {
+  const handleFixIssue = async (issue = {}) => {
     setProcessingIssues((prev) => ({
       ...prev,
       [issue.key]: true,
@@ -86,7 +86,7 @@ function SonarQubeProjectPage() {
       const response = await axios.post(url, data);
       toast.success('PR created successfully!!');
 
-      const updatedIssues = issues.map((i) =>
+      const updatedIssues = issues.map((i = {}) =>
         i.key === issue.key ? { ...i, pr: response.data.prurl, isFixed: true } : i
       );
 
@@ -255,7 +255,7 @@ function SonarQubeProjectPage() {
             </Fade>
           ) : (
             <Grid container spacing={3}>
-              {filteredIssues.map((issue) => (
+              {filteredIssues.map((issue = {}) => (
                 <Grid item xs={12} sm={6} md={4} key={issue.key}>
                   <Fade in={true} timeout={2000}>
                     <Box>

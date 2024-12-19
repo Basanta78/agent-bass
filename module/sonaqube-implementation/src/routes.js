@@ -90,7 +90,7 @@ router.get("/sonarqube/issues/:projectName", async (req, res) => {
     const insertQuery = 'INSERT OR IGNORE INTO issues (id, project, message, rule,severity,component, line, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
 
-    issues.forEach((item) => {
+    issues.forEach((item = {}) => {
       db.run(
         insertQuery,
         [
