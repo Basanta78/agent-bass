@@ -16,9 +16,9 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
     }`);
 
   const [codeVersion2, setCodeVersion2] = useState(`// Updated code version
-      function sayHello(name) {
-          console.log("Hello, " + name + "!");
-      }`);
+    function sayHello(name) {
+        console.log("Hello, " + name + "!");
+    }`);
 
   const [file, setFile] = useState('file');
 
