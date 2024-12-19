@@ -202,6 +202,16 @@ const __dirname = path.dirname(__filename);
   }
 });
 
+function formatCodeToString(inputCode) {
+  // Replace each tab with '\\t' and each newline with '\\n'
+  return inputCode
+    .replace(/\t/g, '\\t')   // Convert tabs to literal '\t'
+    .replace(/\n/g, '\\n')    // Convert line breaks to literal '\n'
+    .split('\n')              // Split the code into an array of lines
+    .map(line => '\t' + line) // Add leading tab to each line
+    .join(' + \n');           // Join all lines with ' + \n'
+}
+
 router.post("/previewfix", async (req, res) => {
   try {
     const { key, line, message, component } = req.body;
@@ -229,6 +239,7 @@ const __dirname = path.dirname(__filename);
     };
 
     const oldContent = await fs.readFile(localRepoDir, 'utf8');
+    oldContent = formatCodeToString(oldContent);
 
     const changesData = await getChangesData([issueDetails]);
 

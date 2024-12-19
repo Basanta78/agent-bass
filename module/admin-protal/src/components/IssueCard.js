@@ -50,9 +50,9 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
       const { data: response } = await axios.post(url, data);
       console.log('Response:', response);
       toast.success('Preview generated successfully!!');
-      setCodeVersion1(response.data?.contentPreview ?? '');
-      setCodeVersion2(response.newData);
-      setFile(response.data?.path ?? 'file');
+      setCodeVersion1(response.data??'');
+      setCodeVersion2(response.newData??'');
+      // setFile(response.data?.path ?? 'file');
       toggleModal();
     } catch (error) {
       toast.error('Failed to create Preview. Please try again!');
