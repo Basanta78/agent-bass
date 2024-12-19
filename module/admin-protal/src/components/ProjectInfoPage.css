@@ -1,0 +1,87 @@
+/* General styling for the page */
+body {
+    background-color: #f5f5f5;
+    /* Light neutral background for a professional look */
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* Container Styling */
+.MuiContainer-root {
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+/* Header Styling */
+.MuiTypography-root {
+    font-weight: bold;
+    font-size: 3rem;
+    letter-spacing: 1.5px;
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(90deg, rgba(33, 150, 243, 1) 0%, rgba(0, 184, 255, 1) 100%);
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-top: 50px;
+    text-align: center;
+}
+
+/* Grid item adjustments for responsiveness */
+.MuiGrid-container {
+    padding: 20px;
+}
+
+.MuiGrid-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Card Styling */
+.MuiCard-root {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.MuiCard-root:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Button Styling */
+.MuiButton-root {
+    font-weight: bold;
+    padding: 10px 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover effects for buttons */
+.MuiButton-root:hover {
+    background-color: #1976D2;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ProjectInfoPage.css */
+.root-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.fixed-footer {
+    background-color: #f5f5f5;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+}
