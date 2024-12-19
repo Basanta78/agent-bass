@@ -9,7 +9,7 @@ import CodeDiffViewer from './CodeDiffViewerDialog';
 
 function IssueCard({ issue, onFixIssue, isProcessing }) {
 
-  //code sample
+  // Code sample
   const [codeVersion1, setCodeVersion1] = useState(`// Initial code version
     function sayHello() {
         console.log("Hello, world!");
@@ -21,8 +21,10 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
     }`);
 
   const [file, setFile] = useState('file');
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Processing states
+  const [previewProcessing, setPreviewProcessing] = useState(false);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -33,7 +35,7 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
   };
 
   const handleShowPreview = async () => {
-    // Logic to handle fixing the issue
+    setPreviewProcessing(true); // Start processing
     toast.info('PR creation in progress!!');
     try {
       const url = 'http://localhost:5000/api/previewfix'; // Replace with your API endpoint
@@ -54,8 +56,9 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
       toggleModal();
     } catch (error) {
       toast.error('Failed to create Preview. Please try again!');
+    } finally {
+      setPreviewProcessing(false); // Stop processing
     }
-    // You can implement the logic for fixing the issue here, such as sending it to an API
   };
 
   return (
@@ -103,11 +106,10 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
           onClick={handleShowPreview}
           fullWidth
           sx={{ mt: 2 }}
+          disabled={previewProcessing} // Disable if processing
         >
-          Show Preview
+          {previewProcessing ? 'Processing Preview...' : 'Show Preview'}
         </Button>
-
-
 
         <Button
           variant="contained"
