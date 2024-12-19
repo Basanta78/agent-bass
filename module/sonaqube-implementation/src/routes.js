@@ -4,199 +4,133 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import { getChangesData } from "./utils/ai.js";
 import { doGithubPRProcess } from "./utils/prCreaterModule.js";
-import { getRepoInfo, createSonarQubeProject, generateSonarScannerProperties } from './service.cjs';
-
-
+import {
+  getRepoInfo,
+  createSonarQubeProject,
+  generateSonarScannerProperties,
+} from "./service.cjs";
+import { fileURLToPath } from 'url'
 dotenv.config();
+import path from "path";
 
 const router = express.Router();
 
-// Load environment variables
 const { SONARQUBE_URL, username, password } = process.env;
 
+router.post("/generate-sonarqube-project", async (req, res) => {
+  const { repoUrl } = req.body;
 
-router.post('/generate-sonarqube-project', async (req, res) => {
-    const { repoUrl } = req.body;
+  try {
+    const repoInfo = await getRepoInfo(repoUrl);
 
+    const createProjectResponse = await createSonarQubeProject(repoInfo);
 
-    try {
-        // 1. Fetch repository details (you may need to interact with GitHub API here)
-        const repoInfo = await getRepoInfo(repoUrl);
+    const token = await generateSonarScannerProperties(repoInfo);
 
-
-
-        // 2. Create SonarQube project using SonarQube API
-        const createProjectResponse = await createSonarQubeProject(repoInfo);
-
-
-        // 3. Generate sonar-scanner.properties file
-        const token = await generateSonarScannerProperties(repoInfo);
-
-        res.json({
-            projectCreated: createProjectResponse.data,
-            propertiesFile: propertiesFilePath,
-            token
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error processing request' });
-    }
+    res.json({
+      projectCreated: createProjectResponse.data,
+      propertiesFile: propertiesFilePath,
+      token,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error processing request" });
+  }
 });
 
-// Get SonarQube issues for a repository
-router.get('/sonarqube/issues/:projectName', async (req, res) => {
-    console.log({ req })
-    const { projectName } = req.params;
-    try {
-        const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
-            params: {
-                componentKeys: projectName,
-                statuses: 'OPEN',
-                types: 'CODE_SMELL',
-                severities: 'MINOR,MAJOR,CRITICAL,BLOCKER',
-            },
-            auth: {
-                username: username,
-                password: password,
-            },
-        });
+router.get("/sonarqube/issues/:projectName", async (req, res) => {
+  console.log({ req });
+  const { projectName } = req.params;
+  try {
+    const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
+      params: {
+        componentKeys: projectName,
+        statuses: "OPEN",
+        types: "CODE_SMELL",
+        severities: "MINOR,MAJOR,CRITICAL,BLOCKER",
+      },
+      auth: {
+        username: username,
+        password: password,
+      },
+    });
 
-        const issues = response.data.issues;
-        console.log("Fetched issues:", JSON.stringify(issues, null, 2));
+    const issues = response.data.issues;
+    console.log("Fetched issues:", JSON.stringify(issues, null, 2));
 
-        res.json(issues);
-    } catch (error) {
-        console.error("Error fetching issues from SonarQube:", error.message);
-        process.exit(1);
-    }
+    res.json(issues);
+  } catch (error) {
+    console.error("Error fetching issues from SonarQube:", error.message);
+    process.exit(1);
+  }
 });
 
-// Backend endpoint to get all projects
-router.get('/projects', async (req, res) => {
-    try {
-        const response = await axios.get('http://localhost:9000/api/components/search_projects', {
-            auth: {
-                username: username,  // SonarQube username or API token
-                password: password,  // Leave empty if using an API token
-            },
-        });
+router.get("/projects", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "http://localhost:9000/api/components/search_projects",
+      {
+        auth: {
+          username: username,
+          password: password,
+        },
+      }
+    );
 
-        const projects = response.data.components || [];
-        res.json({ projects });
-    } catch (error) {
-        console.error('Error fetching projects:', error.message);
-        res.status(500).json({ error: 'Error fetching projects' });
-    }
+    const projects = response.data.components || [];
+    res.json({ projects });
+  } catch (error) {
+    console.error("Error fetching projects:", error.message);
+    res.status(500).json({ error: "Error fetching projects" });
+  }
 });
 
 router.post("/fixissue", async (req, res) => {
-    try {
-        const { key, line, message, component } = req.body;
-        // Parse component
-        const path = component.split(":")[1];
-        console.log("path", path);
+  try {
+    const { key, line, message, component } = req.body;
+    const issueFilePath = component.split(":")[0]+'/'+component.split(":")[1]
+    // const parentDir = path.dirname();
+    // Get the current file's URL and convert it to a file path
+const __filename = fileURLToPath(import.meta.url);
 
-        const issueDetails = {
-            message,
-            path,
-            line,
-        };
+// Get the directory of the current file
+const __dirname = path.dirname(__filename);
 
-        // const changesData = await getChangesData([issueDetails]);
+// Get the parent directory
+    const parentDirectory = path.dirname(__dirname);
 
-        const changesData = [
-            {
-                path: "/Users/basantamaharjan/hack/agent-bass/module/sonaqube-implementation/src/routes.js",
-                content:
-                    'import express from "express";\n' +
-                    'import axios from "axios";\n' +
-                    'import bodyParser from "body-parser";\n' +
-                    'import dotenv from "dotenv";\n' +
-                    'import { getChangesData } from "./utils/ai.js";\n' +
-                    "\n" +
-                    "dotenv.config();\n" +
-                    "\n" +
-                    "const router = express.Router();\n" +
-                    "\n" +
-                    "// Load environment variables\n" +
-                    "const { SONARQUBE_URL, SONARQUBE_TOKEN, COMPONENT_KEY } = process.env;\n" +
-                    "\n" +
-                    "// Get SonarQube issues for a repository\n" +
-                    'router.get("/sonarqube/issues", async (req, res) => {\n' +
-                    "  try {\n" +
-                    "    const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {\n" +
-                    "      params: {\n" +
-                    "        componentKeys: COMPONENT_KEY,\n" +
-                    '        statuses: "OPEN",\n' +
-                    '        types: "CODE_SMELL",\n' +
-                    '        severities: "MINOR,MAJOR,CRITICAL,BLOCKER",\n' +
-                    "      },\n" +
-                    "      auth: {\n" +
-                    "        username: SONARQUBE_TOKEN,\n" +
-                    '        password: "",\n' +
-                    "      },\n" +
-                    "    });\n" +
-                    "\n" +
-                    "    const issues = response.data.issues;\n" +
-                    '    console.log("Fetched issues:", JSON.stringify(issues, null, 2));\n' +
-                    "\n" +
-                    "    res.json(issues);\n" +
-                    "  } catch (error) {\n" +
-                    '    console.error("Error fetching issues from SonarQube:", error.message);\n' +
-                    "    process.exit(1);\n" +
-                    "  }\n" +
-                    "});\n" +
-                    "\n" +
-                    'router.post("/fixissue", async (req, res) => {\n' +
-                    "  try {\n" +
-                    "    const { key, line, message, component } = req.body;\n" +
-                    "\n" +
-                    "    // Parse component\n" +
-                    '    const path = component.split(":")[1];\n' +
-                    '    console.log("path", path);\n' +
-                    "\n" +
-                    "    const issueDetails = {\n" +
-                    "      message,\n" +
-                    "      path,\n" +
-                    "      line,\n" +
-                    "    };\n" +
-                    "\n" +
-                    "    const changesData = await getChangesData([issueDetails]);\n" +
-                    '    console.log("changesData", changesData);\n' +
-                    "\n" +
-                    "    res.json({});\n" +
-                    "  } catch (error) {\n" +
-                    '    console.error("Error fetching issues from SonarQube:", error.message);\n' +
-                    "    process.exit(1);\n" +
-                    "  }\n" +
-                    "});\n" +
-                    "\n" +
-                    "let x = 1;\n" +
-                    "\n" +
-                    "const foo = (name) => {\n" +
-                    "  name = name;\n" +
-                    "};\n" +
-                    "\n" +
-                    "export default router;\n",
-            },
-        ];
+    
+    const newPath =  path.join(parentDirectory, '/repository')
 
-        await doGithubPRProcess(changesData);
+    const localRepoDir = path.join(newPath, issueFilePath);
+    console.log("path", localRepoDir);
 
-        // console.log("changesData", changesData);
+    const issueDetails = {
+      message,
+      path: localRepoDir,
+      line,
+    };
 
-        res.json({});
-    } catch (error) {
-        console.error("Error fetching issues from SonarQube:", error.message);
-        process.exit(1);
-    }
+    const changesData = await getChangesData([issueDetails]);
+
+    changesData.forEach((issue) => {
+      issue.path = component.split(":")[1];
+    });
+    console.log("changesData", changesData);
+  
+    const prDetails = await doGithubPRProcess(changesData, component.split(":")[0],key, message);
+
+    res.json({"message": "PR created sucessfully", "prurl": prDetails.html_url});
+  } catch (error) {
+    console.error("Error fetching issues from SonarQube:", error.message);
+    process.exit(1);
+  }
 });
 
 let x = 1;
 
 const foo = (name) => {
-    name = name;
+  name = name;
 };
 
 export default router;

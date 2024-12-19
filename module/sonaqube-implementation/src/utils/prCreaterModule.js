@@ -1,16 +1,13 @@
 //convert to js after package is added
 import axios from "axios";
+import dotenv from "dotenv";
 
-const baseBranch = "main";
-const repoOwner = "shresthasamir4119";
-const repoName = "agent-bass-test";
-const newBranch = "agent-bass-branch";
-const prTitle = newBranch + " Bot-generated Fix for Sonar Code Quality Issue";
-const prBody =
-  "This pull request is bot-generated and automatically addresses and resolves the selected issue, implementing a fix to ensure proper functionality.";
-const token = "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"; //agent-bass-bot token
-const commitMessage =
-  newBranch + " Bot-generated fix for Sonar code quality issue";
+dotenv.config();
+
+
+
+const { GITHUB_TOKEN, REPO_OWNER, BASE_BRANCH } = process.env;
+
 
 async function createBranch(repoOwner, repoName, newBranch, baseBranch, token) {
   try {
@@ -252,36 +249,39 @@ async function createPullRequest(
         ]
  */
 
-export const doGithubPRProcess = async (fileChanges = []) => {
+export const doGithubPRProcess = async (fileChanges = [], repoName, newBranch, issue) => {
   try {
     // Create a new branch
 
     console.log("-----------------------------------------");
-    await createBranch(repoOwner, repoName, newBranch, baseBranch, token);
+    await createBranch(REPO_OWNER, repoName, newBranch, BASE_BRANCH, GITHUB_TOKEN);
     console.log(`Branch ${newBranch} created successfully`);
-
+    const commitMessage = `fix: ${issue}`;
     // Commit changes to the new branch
     await commitChanges(
-      repoOwner,
+      REPO_OWNER,
       repoName,
       newBranch,
       fileChanges,
       commitMessage,
-      token
+      GITHUB_TOKEN
     );
     console.log(`Changes committed to ${newBranch}`);
 
     // Create the pull request
+    const prTitle = `FIX: ${issue}`;
+    const prBody = `Fix for ${issue}`;
     const pr = await createPullRequest(
-      repoOwner,
+      REPO_OWNER,
       repoName,
       newBranch,
-      baseBranch,
+      BASE_BRANCH,
       prTitle,
       prBody,
-      token
+      GITHUB_TOKEN
     );
     console.log("Pull Request Details:", pr);
+    return pr;
 
     // pr.url will be the link for the created PR
     // return pr; // Optionally return PR details for further use

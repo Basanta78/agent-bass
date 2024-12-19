@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import { Container, Typography, CircularProgress, Grid, Alert } from '@mui/material';
 import axios from 'axios';
 import IssueCard from './IssueCard';  // Import the IssueCard component
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function SonarQubeProjectPage() {
   const { projectName } = useParams(); // Extract project name from the URL
@@ -25,14 +28,36 @@ function SonarQubeProjectPage() {
     fetchProjectDetails();
   }, [projectName]);
 
-  const handleFixIssue = (issue) => {
+  const handleFixIssue = async (issue) => {
     // Logic to handle fixing the issue
-    console.log(`Fixing issue: ${issue.message}`);
+    toast.info('PR creation in progress!!');
+    try {
+      const url = 'http://localhost:5000/api/fixissue'; // Replace with your API endpoint
+      const data = {
+        "key": issue.key,
+        "component": issue.component,
+        "line": issue.line,
+        "message": issue.message,
+        "repoName": issue.project
+    }
+  
+      const response = await axios.post(url, data);
+      console.log('Response:', response.data);
+      toast.success('PR created successfully!!');
+      const updatedIssues = issues.map((i) =>
+        i.key === issue.key ? { ...i, pr: response.data.prurl } : i
+      );
+  
+      setIssues(updatedIssues); 
+    } catch (error) {
+      toast.error('Failed to create PR. Please try again!');
+    }
     // You can implement the logic for fixing the issue here, such as sending it to an API
   };
 
   return (
     <Container>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Typography variant="h4" gutterBottom>
         SonarQube Project: {projectName}
       </Typography>
