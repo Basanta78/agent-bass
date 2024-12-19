@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Typography, CircularProgress, Grid, Alert, Box, Fade, AppBar, Toolbar, Button, Card, CardContent } from '@mui/material';
 import axios from 'axios';
-import IssueCard from './IssueCard'; // Import the IssueCard component
 import './SonarQubeProjectPage.css'; // Import the custom CSS for styles
+import IssueCard from './IssueCard';  // Import the IssueCard component
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function SonarQubeProjectPage() {
   const { projectName } = useParams(); // Extract project name from the URL
@@ -26,9 +29,31 @@ function SonarQubeProjectPage() {
     fetchProjectDetails();
   }, [projectName]);
 
-  const handleFixIssue = (issue) => {
-    console.log(`Fixing issue: ${issue.message}`);
-    // Logic to fix the issue (e.g., notify the backend)
+  const handleFixIssue = async (issue) => {
+    // Logic to handle fixing the issue
+    toast.info('PR creation in progress!!');
+    try {
+      const url = 'http://localhost:5000/api/fixissue'; // Replace with your API endpoint
+      const data = {
+        "key": issue.key,
+        "component": issue.component,
+        "line": issue.line,
+        "message": issue.message,
+        "repoName": issue.project
+      }
+
+      const response = await axios.post(url, data);
+      console.log('Response:', response.data);
+      toast.success('PR created successfully!!');
+      const updatedIssues = issues.map((i) =>
+        i.key === issue.key ? { ...i, pr: response.data.prurl } : i
+      );
+
+      setIssues(updatedIssues);
+    } catch (error) {
+      toast.error('Failed to create PR. Please try again!');
+    }
+    // You can implement the logic for fixing the issue here, such as sending it to an API
   };
 
   return (
@@ -127,10 +152,10 @@ function SonarQubeProjectPage() {
         <Fade in={true} timeout={3000}>
           <Box textAlign="center" sx={{ py: 3, backgroundColor: '#f5f5f5' }}>
             <Typography variant="h5" color="textPrimary" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Team 
+              Team
             </Typography>
             <Typography variant="body1" color="textSecondary">
-            Building smarter tools—this Bug Fix Agent simplifies debugging for effortless development.
+              Building smarter tools—this Bug Fix Agent simplifies debugging for effortless development.
             </Typography>
             <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
               <Typography variant="body2" color="primary">

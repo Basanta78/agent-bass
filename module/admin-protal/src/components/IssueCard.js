@@ -25,6 +25,16 @@ function IssueCard({ issue, onFixIssue }) {
           size="small"
           className="severity-chip"
         />
+        {issue.pr && (
+          <>
+          <Typography color="textSecondary">
+            <strong>PR:</strong> 
+          </Typography>
+          <Typography color="textSecondary">
+            <strong>{issue.pr}</strong>
+          </Typography>
+          </>
+        )}
 
         <Button
           variant="contained"

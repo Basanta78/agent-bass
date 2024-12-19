@@ -39,10 +39,10 @@ const fix_error = async (err, content, line) => {
 export const getChangesData = async (errors) => {
   return await Promise.all(
     errors.map(async (err) => {
-      const { error, line, path } = err;
+      const { message, line, path } = err;
       const content = fs.readFileSync(path, "utf-8");
       try {
-        const response = await fix_error(error, JSON.stringify(content), line);
+        const response = await fix_error(message, JSON.stringify(content), line);
         return { path, content: response.code };
       } catch (error) {
         console.log(error);

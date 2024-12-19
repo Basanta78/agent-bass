@@ -24,7 +24,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "qs": "^6.13.1",
-    "simple-git": "^3.27.0",
+        "simple-git": "^3.27.0",
     "sonarqube-scanner": "^4.2.6",
     "supertest": "^7.0.0"
   },
