@@ -32,7 +32,7 @@ function IssueCard({ issue, onFixIssue }) {
     onFixIssue(issue);
   };
 
-  const handleShowPreview = async (issue) => {
+  const handleShowPreview = async () => {
     // Logic to handle fixing the issue
     toast.info('PR creation in progress!!');
     try {
