@@ -127,6 +127,49 @@ const __dirname = path.dirname(__filename);
   }
 });
 
+router.post("/previewfix", async (req, res) => {
+  try {
+    const { key, line, message, component } = req.body;
+    const issueFilePath = component.split(":")[0]+'/'+component.split(":")[1]
+    // const parentDir = path.dirname();
+    // Get the current file's URL and convert it to a file path
+const __filename = fileURLToPath(import.meta.url);
+
+// Get the directory of the current file
+const __dirname = path.dirname(__filename);
+
+// Get the parent directory
+    const parentDirectory = path.dirname(__dirname);
+
+    
+    const newPath =  path.join(parentDirectory, '/repository')
+
+    const localRepoDir = path.join(newPath, issueFilePath);
+    console.log("path", localRepoDir);
+
+    const issueDetails = {
+      message,
+      path: localRepoDir,
+      line,
+    };
+
+    const oldContent = await fs.readFile(localRepoDir, 'utf8');
+
+    const changesData = await getChangesData([issueDetails]);
+
+    changesData.forEach((issue) => {
+      issue.path = component.split(":")[1];
+    });
+    console.log("changesData", changesData);
+
+
+    res.json({"message": "Preview Generated Succressfully", "newData": changesData, "data": oldContent});
+  } catch (error) {
+    console.error("Error fetching issues from SonarQube:", error.message);
+    process.exit(1);
+  }
+});
+
 let x = 1;
 
 const foo = (name) => {

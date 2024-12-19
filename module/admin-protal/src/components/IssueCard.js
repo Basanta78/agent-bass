@@ -7,15 +7,17 @@ import CodeDiffViewer from './CodeDiffViewerDialog';
 function IssueCard({ issue, onFixIssue }) {
 
   //code sample
-  const codeVersion1 = `// Initial code version
+  const [codeVersion1, setCodeVersion1] = `// Initial code version
     function sayHello() {
         console.log("Hello, world!");
     }`;
 
-  const codeVersion2 = `// Updated code version
+    const [codeVersion2, setCodeVersion2] = `// Updated code version
     function sayHello(name) {
         console.log("Hello, " + name + "!");
     }`;
+
+    const [file, setFile] = 'file';
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -25,6 +27,32 @@ function IssueCard({ issue, onFixIssue }) {
 
   const handleFixIssue = () => {
     onFixIssue(issue);
+  };
+
+  const handleShowPreview = async (issue) => {
+    // Logic to handle fixing the issue
+    toast.info('PR creation in progress!!');
+    try {
+      const url = 'http://localhost:5000/api/previewfix'; // Replace with your API endpoint
+      const data = {
+        "key": issue.key,
+        "component": issue.component,
+        "line": issue.line,
+        "message": issue.message,
+        "repoName": issue.project
+      }
+
+      const {data : response} = await axios.post(url, data);
+      console.log('Response:', response);
+      toast.success('Preview generated successfully!!');
+      setCodeVersion1(response.data?.contentPreview??'');
+      setCodeVersion2(response.newData);
+      setFile(response.data?.path?? 'file');
+      toggleModal();
+    } catch (error) {
+      toast.error('Failed to create Preview. Please try again!');
+    }
+    // You can implement the logic for fixing the issue here, such as sending it to an API
   };
 
   return (
@@ -61,7 +89,7 @@ function IssueCard({ issue, onFixIssue }) {
          <Button
           variant="outlined"
           color="primary"
-          onClick={toggleModal}
+          onClick={handleShowPreview}
           fullWidth
           sx={{ mt: 2 }}
         >
