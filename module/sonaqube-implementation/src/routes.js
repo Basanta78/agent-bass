@@ -109,7 +109,7 @@ router.get("/sonarqube/issues/:projectName", async (req, res) => {
     issues.map(async (item) => {
       const row = await getPrAndId(db, item.key);
       if (row) {
-        return { ...item, pr: row.pr, id: row.id };
+        return { ...item, pr: row.pr, id: row.id, newdata: row.solution_content, data: row.original_content };
       }}))
     res.json(updatedData);
   } catch (error) {
@@ -121,7 +121,7 @@ router.get("/sonarqube/issues/:projectName", async (req, res) => {
 const getPrAndId = (db, id) => {
   return new Promise((resolve, reject) => {
     const query = `
-      SELECT id, pr
+      SELECT id, pr, solution_content, original_content
       FROM issues
       WHERE id = ?
     `;
