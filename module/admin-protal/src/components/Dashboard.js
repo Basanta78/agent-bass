@@ -55,7 +55,7 @@ function Dashboard() {
                 throw new Error(result.message || 'Error generating SonarQube project.');
             }
         } catch (err) {
-            setResponseMessage('There was an issue processing your request.');
+            setResponseMessage('Scanning the repo for issues...');
         } finally {
             setIsGenerating(false);
             setProcessing(false);

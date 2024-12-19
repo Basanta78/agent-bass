@@ -126,12 +126,12 @@ function IssueCard({ issue = {}, onFixIssue, isProcessing }) {
         </Button>
 
         {/* PR Link Button */}
-        {issue.pr && (
+        {issue?.pr && (
           <Button
             variant="outlined"
             color="primary"
             sx={{ mt: 2 }}
-            href={issue.pr}
+            href={issue?.pr}
             target="_blank"
             fullWidth
           >

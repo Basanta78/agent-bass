@@ -47,7 +47,7 @@ function SonarQubeProjectPage() {
         setTimeout(() => {
           const issuesWithFixStatus = response.data.map((issue = {}) => ({
             ...issue,
-            isFixed: Boolean(issue.pr), 
+            isFixed: Boolean(issue?.pr), 
             pr: issue?.pr || null,    
           }));
 
