@@ -1,6 +1,27 @@
 import { Card, CardContent, Typography, Button, Divider, Chip, Box } from '@mui/material';
+import React, { useState } from 'react';
+import CustomModal from './Modal';
+import CodeDiffViewer from './CodeDiffViewerDialog';
 
 function IssueCard({ issue, onFixIssue, isProcessing }) {
+
+  //code sample
+  const codeVersion1 = `// Initial code version
+    function sayHello() {
+        console.log("Hello, world!");
+    }`;
+
+  const codeVersion2 = `// Updated code version
+    function sayHello(name) {
+        console.log("Hello, " + name + "!");
+    }`;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
   const handleFixIssue = () => {
     onFixIssue(issue);
   };
@@ -45,6 +66,16 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
         </Box>
 
         {/* Fix Issue Button */}
+         <Button
+          variant="outlined"
+          color="primary"
+          onClick={toggleModal}
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Show Preview
+        </Button>
+
         <Button
           variant="contained"
           color={issue.isFixed ? 'success' : 'secondary'}
@@ -69,6 +100,9 @@ function IssueCard({ issue, onFixIssue, isProcessing }) {
             View MR
           </Button>
         )}
+        <CustomModal isOpen={isModalOpen} onClose={toggleModal}>
+          <CodeDiffViewer code1={codeVersion1} code2={codeVersion2} />
+        </CustomModal>
       </CardContent>
     </Card>
   );
