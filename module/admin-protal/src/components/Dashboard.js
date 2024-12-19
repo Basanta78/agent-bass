@@ -149,20 +149,6 @@ function Dashboard() {
                         </div>
                     </Fade>
 
-                    <Fade in={true} timeout={2000}>
-                        <FormControl fullWidth sx={{ mb: 3 }} className="input-field">
-                            <InputLabel>Access Level</InputLabel>
-                            <Select
-                                value={accessLevel}
-                                onChange={(e) => setAccessLevel(e.target.value)}
-                                label="Access Level"
-                            >
-                                <MenuItem value="read">Read</MenuItem>
-                                <MenuItem value="write">Write</MenuItem>
-                                <MenuItem value="admin">Admin</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Fade>
 
                     <Fade in={true} timeout={2500}>
                         <Button
