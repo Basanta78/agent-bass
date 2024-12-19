@@ -138,7 +138,7 @@ function SonarQubeProjectPage() {
       {/* Header with Reload Button */}
       <AppBar position="static" sx={{ backgroundColor: '#1976d2', mb: 2 }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold', color: 'white' }}>
             Bug Fix Agent Dashboard
           </Typography>
           <Button color="inherit" href="/">

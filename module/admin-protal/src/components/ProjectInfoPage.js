@@ -38,7 +38,7 @@ function ProjectInfoPage() {
       {/* Header */}
       <AppBar position="static" sx={{ backgroundColor: '#1976d2', mb: 2 }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold', color: 'white' }}>            
             Bug Fix Agent Dashboard
           </Typography>
           <Button color="inherit" href="/">
@@ -190,7 +190,7 @@ function ProjectInfoPage() {
         <Fade in={true} timeout={3000}>
           <Box textAlign="center" sx={{ py: 3, backgroundColor: '#f5f5f5' }}>
             <Typography variant="h5" color="textPrimary" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Team
+              BASS Team
             </Typography>
             <Typography variant="body1" color="textSecondary">
             Building smarter tools—this Bug Fix Agent simplifies debugging for effortless development.

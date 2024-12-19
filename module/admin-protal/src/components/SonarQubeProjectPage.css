@@ -19,8 +19,12 @@
 /* Card Styling */
 .MuiPaper-root {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    /* border-radius: 10px; */
     transition: all 0.3s ease;
+}
+
+* {
+    text-shadow: none !important;
 }
 
 .MuiPaper-root:hover {

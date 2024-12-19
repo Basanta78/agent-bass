@@ -30,6 +30,8 @@ const modalContentStyle = {
   borderRadius: '8px',
   maxWidth: '900px',
   width: '80%',
+  overflowY: 'scroll',
+  maxHeight: '90vh',
   boxShadow: 24, // This is the shadow effect
 };
 

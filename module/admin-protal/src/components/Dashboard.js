@@ -222,7 +222,7 @@ function Dashboard() {
                 <Fade in={true} timeout={3000}>
                     <Box textAlign="center" sx={{ py: 3, backgroundColor: '#f5f5f5' }}>
                         <Typography variant="h5" color="textPrimary" sx={{ fontWeight: 'bold', mb: 1 }}>
-                            Team
+                            BASS Team
                         </Typography>
                         <Typography variant="body1" color="textSecondary">
                         Building smarter tools—this Bug Fix Agent simplifies debugging for effortless development.
