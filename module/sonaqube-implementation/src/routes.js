@@ -114,7 +114,7 @@ router.get("/sonarqube/issues/:projectName", async (req, res) => {
     res.json(updatedData);
   } catch (error) {
     console.error("Error fetching issues from SonarQube:", error.message);
-    process.exit(1);
+    res.status(500).json({ error: "Error processing request" });
   }
 });
 
@@ -215,7 +215,7 @@ console.log("changesData", changesData);
     res.json({"message": "PR created sucessfully", "prurl": prDetails.html_url});
   } catch (error) {
     console.error("Error fetching issues from SonarQube:", error.message);
-    process.exit(1);
+    res.status(500).json({ error: "Error processing request" });
   }
 });
 
@@ -301,7 +301,7 @@ const __dirname = path.dirname(__filename);
     res.json({"message": "Preview Generated Succressfully", "newData": changesData[0].content, "data": oldContent});
   } catch (error) {
     console.error("Error fetching issues from SonarQube:", error.message);
-    process.exit(1);
+    res.status(500).json({ error: "Error processing request" });
   }
 });
 
