@@ -12,7 +12,7 @@ const CodeDiffViewer = ({ code1, code2 }) => {
 
     // Convert the diff to HTML using diff2html
     const diffHtml = html(diff, {
-      drawFileList: true, // Hide file list
+      drawFileList: false, // Hide file list
       matching: 'words',   // Word matching for more accurate diffs
       outputFormat: 'side-by-side', // Side-by-side format
     });

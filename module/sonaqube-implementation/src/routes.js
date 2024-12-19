@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import { getChangesData } from "./utils/ai.js";
 import { doGithubPRProcess } from "./utils/prCreaterModule.js";
+import { promises as fs } from 'fs';
 import {
   getRepoInfo,
   createSonarQubeProject,
@@ -12,10 +13,38 @@ import {
 import { fileURLToPath } from 'url'
 dotenv.config();
 import path from "path";
+import sqlite3 from "sqlite3";
+
 
 const router = express.Router();
 
 const { SONARQUBE_URL, username, password } = process.env;
+const db = new sqlite3.Database('./issues.db', (err) => {
+  if (err) {
+    console.error('Error opening database:', err.message);
+  } else {
+    console.log('Connected to the SQLite database.');
+  }
+});
+
+// Open the database
+  
+
+   db.run(`
+    CREATE TABLE IF NOT EXISTS issues (
+      id TEXT PRIMARY KEY ,
+      project TEXT,
+      message TEXT NOT NULL,
+      rule TEXT,
+      severity TEXT,
+      component TEXT,
+      line INTEGER,
+      type TEXT,
+      status TEXT,
+      pr TEXT
+    )
+  `);
+
 
 router.post("/generate-sonarqube-project", async (req, res) => {
   const { repoUrl } = req.body;
@@ -26,6 +55,7 @@ router.post("/generate-sonarqube-project", async (req, res) => {
     const createProjectResponse = await createSonarQubeProject(repoInfo);
 
     const token = await generateSonarScannerProperties(repoInfo);
+   
 
     res.json({
       projectCreated: createProjectResponse.data,
@@ -55,14 +85,54 @@ router.get("/sonarqube/issues/:projectName", async (req, res) => {
     });
 
     const issues = response.data.issues;
-    console.log("Fetched issues:", JSON.stringify(issues, null, 2));
+    const insertQuery = 'INSERT OR IGNORE INTO issues (id, project, message, rule,severity,component, line, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
-    res.json(issues);
+
+    issues.forEach((item) => {
+      db.run(
+        insertQuery,
+        [
+          item.key,
+          item.project,
+          item.message,
+          item.rule,
+          item.severity,
+          item.component,
+          item.line,
+          item.type,
+        ],
+      )
+      })
+  let updatedData = await Promise.all(
+    issues.map(async (item) => {
+      const row = await getPrAndId(db, item.key);
+      if (row) {
+        return { ...item, pr: row.pr, id: row.id };
+      }}))
+    res.json(updatedData);
   } catch (error) {
     console.error("Error fetching issues from SonarQube:", error.message);
     process.exit(1);
   }
 });
+
+const getPrAndId = (db, id) => {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT id, pr
+      FROM issues
+      WHERE id = ?
+    `;
+
+    db.get(query, [id], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row || null); // Return `null` if no row is found
+      }
+    });
+  });
+};
 
 router.get("/projects", async (req, res) => {
   try {
@@ -118,8 +188,57 @@ const __dirname = path.dirname(__filename);
     console.log("changesData", changesData);
   
     const prDetails = await doGithubPRProcess(changesData, component.split(":")[0],key, message);
+    const updateQuery = `
+    UPDATE issues
+    SET pr = ?
+    WHERE id = ?
+  `;
+  db.run(updateQuery, [prDetails.html_url, key]);
 
     res.json({"message": "PR created sucessfully", "prurl": prDetails.html_url});
+  } catch (error) {
+    console.error("Error fetching issues from SonarQube:", error.message);
+    process.exit(1);
+  }
+});
+
+router.post("/previewfix", async (req, res) => {
+  try {
+    const { key, line, message, component } = req.body;
+    const issueFilePath = component.split(":")[0]+'/'+component.split(":")[1]
+    // const parentDir = path.dirname();
+    // Get the current file's URL and convert it to a file path
+const __filename = fileURLToPath(import.meta.url);
+
+// Get the directory of the current file
+const __dirname = path.dirname(__filename);
+
+// Get the parent directory
+    const parentDirectory = path.dirname(__dirname);
+
+    
+    const newPath =  path.join(parentDirectory, '/repository')
+
+    const localRepoDir = path.join(newPath, issueFilePath);
+    console.log("path", localRepoDir);
+
+    const issueDetails = {
+      message,
+      path: localRepoDir,
+      line,
+    };
+
+    const oldContent = await fs.readFile(localRepoDir, 'utf8');
+
+    const changesData = await getChangesData([issueDetails]);
+
+    changesData.forEach((issue) => {
+      issue.path = component.split(":")[1];
+    });
+    console.log("changesData", changesData);
+
+
+    res.json({"message": "Preview Generated Succressfully", "newData": changesData, "data": oldContent});
   } catch (error) {
     console.error("Error fetching issues from SonarQube:", error.message);
     process.exit(1);

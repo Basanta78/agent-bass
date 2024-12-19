@@ -280,7 +280,6 @@ export const doGithubPRProcess = async (fileChanges = [], repoName, newBranch, i
       prBody,
       GITHUB_TOKEN
     );
-    console.log("Pull Request Details:", pr);
     return pr;
 
     // pr.url will be the link for the created PR
