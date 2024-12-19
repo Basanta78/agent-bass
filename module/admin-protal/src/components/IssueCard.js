@@ -10,17 +10,17 @@ import CodeDiffViewer from './CodeDiffViewerDialog';
 function IssueCard({ issue, onFixIssue }) {
 
   //code sample
-  const [codeVersion1, setCodeVersion1] = `// Initial code version
+  const [codeVersion1, setCodeVersion1] = useState(`// Initial code version
     function sayHello() {
         console.log("Hello, world!");
-    }`;
+    }`);
 
-    const [codeVersion2, setCodeVersion2] = `// Updated code version
+    const [codeVersion2, setCodeVersion2] = useState(`// Updated code version
     function sayHello(name) {
         console.log("Hello, " + name + "!");
-    }`;
+    }`);
 
-    const [file, setFile] = 'file';
+    const [file, setFile] = useState('file');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
