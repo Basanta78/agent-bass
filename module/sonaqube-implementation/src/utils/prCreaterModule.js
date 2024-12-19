@@ -253,7 +253,6 @@ export const doGithubPRProcess = async (fileChanges = [], repoName, newBranch, i
   try {
     // Create a new branch
 
-    console.log("-----------------------------------------");
     await createBranch(REPO_OWNER, repoName, newBranch, BASE_BRANCH, GITHUB_TOKEN);
     console.log(`Branch ${newBranch} created successfully`);
     const commitMessage = `fix: ${issue}`;

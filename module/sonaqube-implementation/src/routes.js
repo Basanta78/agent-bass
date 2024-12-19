@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import { getChangesData } from "./utils/ai.js";
 import { doGithubPRProcess } from "./utils/prCreaterModule.js";
-import { promises as fs } from 'fs';
+import { copyFileSync, promises as fs } from 'fs';
 import {
   getRepoInfo,
   createSonarQubeProject,
@@ -41,7 +41,10 @@ const db = new sqlite3.Database('./issues.db', (err) => {
       line INTEGER,
       type TEXT,
       status TEXT,
-      pr TEXT
+      pr TEXT,
+      original_content TEXT,
+      solution_content TEXT,
+      changes TEXT
     )
   `);
 
@@ -69,7 +72,6 @@ router.post("/generate-sonarqube-project", async (req, res) => {
 });
 
 router.get("/sonarqube/issues/:projectName", async (req, res) => {
-  console.log({ req });
   const { projectName } = req.params;
   try {
     const response = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
@@ -157,6 +159,14 @@ router.get("/projects", async (req, res) => {
 router.post("/fixissue", async (req, res) => {
   try {
     const { key, line, message, component } = req.body;
+
+    const solution = await checkPreview(db, key);
+    let changesData = []
+    if (solution) {
+      console.log("solution", solution)
+      changesData = JSON.parse(solution.changes)
+    }
+    else{
     const issueFilePath = component.split(":")[0]+'/'+component.split(":")[1]
     // const parentDir = path.dirname();
     // Get the current file's URL and convert it to a file path
@@ -180,12 +190,19 @@ const __dirname = path.dirname(__filename);
       line,
     };
 
-    const changesData = await getChangesData([issueDetails]);
+     changesData = await getChangesData([issueDetails]);
 
+    const updateChangesQuery = `
+    UPDATE issues
+    SET changes = ?
+    WHERE id = ?
+  `;
+  db.run(updateChangesQuery, [JSON.stringify(changesData), key]);
+    }
+console.log("changesData", changesData);
     changesData.forEach((issue) => {
       issue.path = component.split(":")[1];
     });
-    console.log("changesData", changesData);
   
     const prDetails = await doGithubPRProcess(changesData, component.split(":")[0],key, message);
     const updateQuery = `
@@ -211,10 +228,37 @@ function formatCodeToString(inputCode) {
     .map(line => '\t' + line) // Add leading tab to each line
     .join(' + \n');           // Join all lines with ' + \n'
 }
+const checkPreview = (db, id) => {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT original_content, solution_content, changes
+      FROM issues
+      WHERE id = ? AND original_content IS NOT NULL AND original_content!= '' 
+      AND solution_content IS NOT NULL AND  solution_content!= ''
+    `;
+
+    db.get(query, [id], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row||null); // Return true if a row is found, false otherwise
+      }
+    });
+  });
+};
+
 
 router.post("/previewfix", async (req, res) => {
   try {
     const { key, line, message, component } = req.body;
+    const solution = await checkPreview(db, key);
+    if (solution) {
+      res.json({"message": "Preview Generated Succressfully", "newData": solution.solution_content, "data": solution.original_content});
+      return;
+    }
+
+    // console.log("preview", preview);
+
     const issueFilePath = component.split(":")[0]+'/'+component.split(":")[1]
     // const parentDir = path.dirname();
     // Get the current file's URL and convert it to a file path
@@ -238,18 +282,23 @@ const __dirname = path.dirname(__filename);
       line,
     };
 
-    const oldContent = await fs.readFile(localRepoDir, 'utf8');
-    oldContent = formatCodeToString(oldContent);
+    let oldContent = await fs.readFile(localRepoDir, 'utf8');
 
     const changesData = await getChangesData([issueDetails]);
 
     changesData.forEach((issue) => {
       issue.path = component.split(":")[1];
     });
-    console.log("changesData", changesData);
+
+    const updateQuery = `
+    UPDATE issues
+    SET original_content = ?, solution_content = ?, changes = ?
+    WHERE id = ?
+  `;
+  db.run(updateQuery, [oldContent, changesData[0].content, JSON.stringify(changesData), key]);
 
 
-    res.json({"message": "Preview Generated Succressfully", "newData": changesData, "data": oldContent});
+    res.json({"message": "Preview Generated Succressfully", "newData": changesData[0].content, "data": oldContent});
   } catch (error) {
     console.error("Error fetching issues from SonarQube:", error.message);
     process.exit(1);
