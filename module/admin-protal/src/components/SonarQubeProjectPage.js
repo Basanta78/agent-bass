@@ -42,12 +42,14 @@ function SonarQubeProjectPage() {
 
         const response = await axios.get(`http://localhost:5000/api/sonarqube/issues/${projectName}`);
 
+        console.log({response})
+
         setTimeout(() => {
-          const issuesWithFixStatus = response.data.map((issue) => {
-            const isFixed = localStorage.getItem(`issue_${issue.key}_fixed`) === 'true';
-            const prLink = localStorage.getItem(`issue_${issue.key}_pr`) || null;
-            return { ...issue, isFixed, pr: prLink };
-          });
+          const issuesWithFixStatus = response.data.map((issue) => ({
+            ...issue,
+            isFixed: Boolean(issue.pr), 
+            pr: issue.pr || null,    
+          }));
 
           setIssues(issuesWithFixStatus);
           setFilteredIssues(issuesWithFixStatus);
@@ -91,8 +93,6 @@ function SonarQubeProjectPage() {
       setIssues(updatedIssues);
       applyFilter(severityFilter, typeFilter, updatedIssues);
 
-      localStorage.setItem(`issue_${issue.key}_fixed`, 'true');
-      localStorage.setItem(`issue_${issue.key}_pr`, response.data.prurl);
     } catch (error) {
       toast.error('Failed to create PR. Please try again!');
     } finally {
