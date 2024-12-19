@@ -1,28 +1,65 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Typography, CircularProgress, Grid, Alert, Box, Fade, AppBar, Toolbar, Button, Card, CardContent } from '@mui/material';
+import {
+  Container,
+  Typography,
+  CircularProgress,
+  Grid,
+  Alert,
+  Box,
+  Fade,
+  AppBar,
+  Toolbar,
+  Button,
+  Card,
+  CardContent,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
 import axios from 'axios';
-import './SonarQubeProjectPage.css'; // Import the custom CSS for styles
-import IssueCard from './IssueCard';  // Import the IssueCard component
+import './SonarQubeProjectPage.css';
+import IssueCard from './IssueCard';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 function SonarQubeProjectPage() {
-  const { projectName } = useParams(); // Extract project name from the URL
-  const [issues, setIssues] = useState([]); // Store issues
+  const { projectName } = useParams();
+  const [issues, setIssues] = useState([]);
+  const [filteredIssues, setFilteredIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [severityFilter, setSeverityFilter] = useState('ALL');
+  const [typeFilter, setTypeFilter] = useState('ALL'); 
+  const [processingIssues, setProcessingIssues] = useState({});
+  const [fetchingIssues, setFetchingIssues] = useState(true); // New state for "Fetching Issues"
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
+        setFetchingIssues(true); // Set fetching state to true
+
+        // Simulate a delay (2 seconds) for fetching issues
         const response = await axios.get(`http://localhost:5000/api/sonarqube/issues/${projectName}`);
-        setIssues(response.data); // Assuming response contains issues array
-        setLoading(false);
+        
+        // Simulating a delay before setting the issues
+        setTimeout(() => {
+          const issuesWithFixStatus = response.data.map((issue) => {
+            const isFixed = localStorage.getItem(`issue_${issue.key}_fixed`) === 'true';
+            const prLink = localStorage.getItem(`issue_${issue.key}_pr`) || null;
+            return { ...issue, isFixed, pr: prLink };
+          });
+
+          setIssues(issuesWithFixStatus);
+          setFilteredIssues(issuesWithFixStatus);
+          setLoading(false);
+          setFetchingIssues(false); // Set fetching state to false after issues are fetched
+        }, 2000); // Delay of 2 seconds to simulate the fetching process
       } catch (err) {
         setError('Error fetching project details');
         setLoading(false);
+        setFetchingIssues(false); // Stop fetching state on error
       }
     };
 
@@ -30,30 +67,67 @@ function SonarQubeProjectPage() {
   }, [projectName]);
 
   const handleFixIssue = async (issue) => {
-    // Logic to handle fixing the issue
+    setProcessingIssues((prev) => ({
+      ...prev,
+      [issue.key]: true,
+    }));
+
     toast.info('PR creation in progress!!');
     try {
-      const url = 'http://localhost:5000/api/fixissue'; // Replace with your API endpoint
+      const url = 'http://localhost:5000/api/fixissue';
       const data = {
-        "key": issue.key,
-        "component": issue.component,
-        "line": issue.line,
-        "message": issue.message,
-        "repoName": issue.project
-      }
+        key: issue.key,
+        component: issue.component,
+        line: issue.line,
+        message: issue.message,
+        repoName: issue.project,
+      };
 
       const response = await axios.post(url, data);
-      console.log('Response:', response.data);
       toast.success('PR created successfully!!');
+
       const updatedIssues = issues.map((i) =>
-        i.key === issue.key ? { ...i, pr: response.data.prurl } : i
+        i.key === issue.key ? { ...i, pr: response.data.prurl, isFixed: true } : i
       );
 
       setIssues(updatedIssues);
+      applyFilter(severityFilter, typeFilter, updatedIssues);
+
+      localStorage.setItem(`issue_${issue.key}_fixed`, 'true');
+      localStorage.setItem(`issue_${issue.key}_pr`, response.data.prurl);
     } catch (error) {
       toast.error('Failed to create PR. Please try again!');
+    } finally {
+      setProcessingIssues((prev) => ({
+        ...prev,
+        [issue.key]: false,
+      }));
     }
-    // You can implement the logic for fixing the issue here, such as sending it to an API
+  };
+
+  const applyFilter = (severity, type, issueList = issues) => {
+    let filtered = issueList;
+
+    if (severity !== 'ALL') {
+      filtered = filtered.filter((issue) => issue.severity === severity);
+    }
+
+    if (type !== 'ALL') {
+      filtered = filtered.filter((issue) => issue.type === type);
+    }
+
+    setFilteredIssues(filtered);
+  };
+
+  const handleFilterChange = (event, filterType) => {
+    const value = event.target.value;
+    if (filterType === 'severity') {
+      setSeverityFilter(value);
+      applyFilter(value, typeFilter);
+    } else if (filterType === 'type') {
+      setTypeFilter(value);
+      applyFilter(severityFilter, value);
+    }
   };
 
   return (
@@ -88,7 +162,52 @@ function SonarQubeProjectPage() {
             </Fade>
           </Box>
 
-          {loading ? (
+          {/* Filter Dropdowns */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              mb: 4,
+            }}
+          >
+            <FormControl size="small" sx={{ minWidth: 150, marginRight: 2 }}>
+              <InputLabel>Severity</InputLabel>
+              <Select
+                value={severityFilter}
+                onChange={(e) => handleFilterChange(e, 'severity')}
+                label="Severity"
+              >
+                <MenuItem value="ALL">All</MenuItem>
+                <MenuItem value="BLOCKER">Blocker</MenuItem>
+                <MenuItem value="CRITICAL">Critical</MenuItem>
+                <MenuItem value="MAJOR">Major</MenuItem>
+                <MenuItem value="MINOR">Minor</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={typeFilter}
+                onChange={(e) => handleFilterChange(e, 'type')}
+                label="Type"
+              >
+                <MenuItem value="ALL">All</MenuItem>
+                <MenuItem value="BUG">Bug</MenuItem>
+                <MenuItem value="VULNERABILITY">Vulnerability</MenuItem>
+                <MenuItem value="CODE_SMELL">Code Smell</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Showing the "Fetching Issues" or the actual issues */}
+          {fetchingIssues ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+              <Typography variant="h6">Fetching Issues...</Typography>
+              <CircularProgress size={60} color="primary" sx={{ ml: 2 }} />
+            </Box>
+          ) : loading ? (
             <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
               <CircularProgress size={60} color="primary" />
             </Box>
@@ -98,46 +217,32 @@ function SonarQubeProjectPage() {
                 {error}
               </Alert>
             </Fade>
-          ) : issues.length === 0 ? (
+          ) : filteredIssues.length === 0 ? (
             <Fade in={true} timeout={1500}>
               <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-                {/* No Issues Found Card */}
                 <Card sx={{ maxWidth: 500, textAlign: 'center', boxShadow: 3 }}>
                   <CardContent>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
-                      No Issues Found for this Project
+                      No Issues Found for the Selected Filters
                     </Typography>
                     <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
-                      Your code is clean and free from any issues.
+                      Try changing the filters or check back later.
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      href="/add-project"
-                      sx={{
-                        px: 4,
-                        py: 1.5,
-                        fontWeight: 'bold',
-                        borderRadius: 2,
-                        '&:hover': {
-                          backgroundColor: '#1976d2',
-                          color: 'white',
-                        },
-                      }}
-                    >
-                      Add New Project
-                    </Button>
                   </CardContent>
                 </Card>
               </Box>
             </Fade>
           ) : (
             <Grid container spacing={3}>
-              {issues.map((issue) => (
+              {filteredIssues.map((issue) => (
                 <Grid item xs={12} sm={6} md={4} key={issue.key}>
                   <Fade in={true} timeout={2000}>
                     <Box>
-                      <IssueCard issue={issue} onFixIssue={handleFixIssue} />
+                      <IssueCard
+                        issue={issue}
+                        onFixIssue={handleFixIssue}
+                        isProcessing={processingIssues[issue.key]} // Pass individual processing state
+                      />
                     </Box>
                   </Fade>
                 </Grid>
@@ -145,34 +250,6 @@ function SonarQubeProjectPage() {
             </Grid>
           )}
         </Container>
-      </Box>
-
-      {/* Fixed Footer */}
-      <Box className="fixed-footer">
-        <Fade in={true} timeout={3000}>
-          <Box textAlign="center" sx={{ py: 3, backgroundColor: '#f5f5f5' }}>
-            <Typography variant="h5" color="textPrimary" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Team
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              Building smarter tools—this Bug Fix Agent simplifies debugging for effortless development.
-            </Typography>
-            <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
-              <Typography variant="body2" color="primary">
-                Contributor 1: Basanta Maharjan
-              </Typography>
-              <Typography variant="body2" color="primary">
-                Contributor 2: Amrita
-              </Typography>
-              <Typography variant="body2" color="primary">
-                Contributor 3: Susan Koju
-              </Typography>
-              <Typography variant="body2" color="primary">
-                Contributor 4: Samir Shrestha
-              </Typography>
-            </Box>
-          </Box>
-        </Fade>
       </Box>
     </Box>
   );
