@@ -1,3 +1,5 @@
+module/sonaqube-implementation/repository*
+
 # Logs
 logs
 *.log
